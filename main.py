@@ -1,6 +1,3 @@
-import cv2
-import os
-
 from opencv.cascade.cascadebase import HaarCascadeBase
 from opencv.cascade.downloadbase import DownloadPath
 

@@ -3,3 +3,4 @@ downloads
 cascadedata
 .vscode
 README.md
+*.pyc

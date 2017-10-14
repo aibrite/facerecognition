@@ -114,7 +114,8 @@ class CascadeImageProcessor(DownloadPath):
             image = cv2.imread(os.path.join(
                 positive_dir, img), cv2.IMREAD_COLOR)
             face_rect = image[50: 150, 50: 150]
-            cv2.imwrite('downloads/pos/' + str(count) + '.jpg', face_rect)
+            resized = self.resize_image(face_rect, is_neg=False)
+            cv2.imwrite('downloads/pos/' + str(count) + '.jpg', resized)
             count += 1
 
         print('Raw image preparation completed')
