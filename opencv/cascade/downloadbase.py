@@ -59,35 +59,6 @@ class CascadeImageProcessor(DownloadPath):
         cv2.imwrite(file_name, resized)
         print('Resized Grayscale Image Saved')
 
-    def remove_uglies(self):
-        remove_request = self.identify_uglies()
-        if remove_request is True:
-            for sign_path in os.listdir(self.dirs['main']):
-                if sign_path == 'uglies':
-                    continue
-                for img in os.listdir(self.dirs[sign_path]):
-                    for ugly in os.listdir(self.dirs['uglies']):
-
-                        try:
-                            current_img_path = os.path.join(
-                                self.dirs[sign_path], img)
-                            ugly_img = cv2.imread(os.path.join(
-                                self.dirs['uglies'], ugly))
-                            current_img = cv2.imread(current_img_path)
-
-                            if ugly_img.shape == current_img.shape and not (np.bitwise_xor(ugly_img, current_img).any()):
-                                print('Ugly image found: {}'.format(
-                                    current_img_path))
-                                print('Image removed')
-                                os.remove(current_img_path)
-
-                        except Exception as err:
-                            print(str(err))
-
-            print('Ugly images successfully removed.')
-        else:
-            print('Ugly image removal cancelled by user.')
-
     def download_and_process(self, urls, count=None):
         pic_count = count + 1
         base_url = self.dirs['neg']
@@ -140,9 +111,10 @@ class CascadeImageProcessor(DownloadPath):
         print('Preparing positive images...')
         count = 1
         for img in os.listdir(positive_dir):
-            im = cv2.imread(os.path.join(positive_dir, img), cv2.IMREAD_COLOR)
-            img_rect = im[50: 160, 50: 150]
-            cv2.imwrite('downloads/pos/' + str(count) + '.jpg', img_rect)
+            image = cv2.imread(os.path.join(
+                positive_dir, img), cv2.IMREAD_COLOR)
+            face_rect = image[50: 150, 50: 150]
+            cv2.imwrite('downloads/pos/' + str(count) + '.jpg', face_rect)
             count += 1
 
         print('Raw image preparation completed')
@@ -167,3 +139,32 @@ class CascadeImageProcessor(DownloadPath):
                 prompt = True
 
         return True
+
+    def remove_uglies(self):
+        remove_request = self.identify_uglies()
+        if remove_request is True:
+            for sign_path in os.listdir(self.dirs['main']):
+                if sign_path == 'uglies':
+                    continue
+                for img in os.listdir(self.dirs[sign_path]):
+                    for ugly in os.listdir(self.dirs['uglies']):
+
+                        try:
+                            current_img_path = os.path.join(
+                                self.dirs[sign_path], img)
+                            ugly_img = cv2.imread(os.path.join(
+                                self.dirs['uglies'], ugly))
+                            current_img = cv2.imread(current_img_path)
+
+                            if ugly_img.shape == current_img.shape and not (np.bitwise_xor(ugly_img, current_img).any()):
+                                print('Ugly image found: {}'.format(
+                                    current_img_path))
+                                print('Image removed')
+                                os.remove(current_img_path)
+
+                        except Exception as err:
+                            print(str(err))
+
+            print('Ugly images successfully removed.')
+        else:
+            print('Ugly image removal cancelled by user.')
