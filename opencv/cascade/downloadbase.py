@@ -77,7 +77,7 @@ class CascadeImageProcessor(DownloadPath):
 
         return pic_count
 
-    def prepare_negatives(self, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00523513', 'http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n07942152'], pos_urls=''):
+    def prepare_negatives(self, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893']):
         last_neg = 0
 
         for neg_url in neg_urls:
@@ -144,6 +144,7 @@ class CascadeImageProcessor(DownloadPath):
     def remove_uglies(self):
         remove_request = self.identify_uglies()
         if remove_request is True:
+            count = 0
             for sign_path in os.listdir(self.dirs['main']):
                 if sign_path == 'uglies':
                     continue
@@ -162,10 +163,12 @@ class CascadeImageProcessor(DownloadPath):
                                     current_img_path))
                                 print('Image removed')
                                 os.remove(current_img_path)
+                                count += 1
 
                         except Exception as err:
                             print(str(err))
 
-            print('Ugly images successfully removed.')
+            print(
+                'Ugly images successfully removed. Total uglies removed: {0}'.format(count))
         else:
             print('Ugly image removal cancelled by user.')
