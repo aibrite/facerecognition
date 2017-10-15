@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import os
 from shutil import copy2
+import socket
 
 
 class DownloadPath():
@@ -62,10 +63,12 @@ class CascadeImageProcessor(DownloadPath):
     def download_and_process(self, urls, count=None):
         pic_count = count + 1
         base_url = self.dirs['neg']
+        socket.setdefaulttimeout(10)
 
         for image_url in urls.split('\n'):
             try:
                 print('Downloading Image No {}: {}'.format(pic_count, image_url))
+
                 urllib.request.urlretrieve(
                     image_url, os.path.join(base_url, str(pic_count) + '.jpg'))
                 self.grayscale_and_save(
