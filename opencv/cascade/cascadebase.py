@@ -61,6 +61,28 @@ class HaarCascadeBase(CascadeImageProcessor):
         cap.release()
         cv2.destroyAllWindows()
 
+    def create_desc_files(self):
+        if os.path.exists('bg.txt'):
+            os.remove('bg.txt')
+        if os.path.exists('info.dat'):
+            os.remove('info.dat')
+
+        for sign_type in os.listdir(self.dirs['main']):
+            if sign_type != 'neg' and sign_type != 'pos':
+                continue
+            else:
+                for img in os.listdir(self.dirs[sign_type]):
+                    if sign_type == 'neg':
+                        line = os.path.join(self.dirs[sign_type], img) + '\n'
+                        with open('bg.txt', 'a') as f:
+                            f.write(line)
+
+                    elif sign_type == 'pos':
+                        line = os.path.join(
+                            self.dirs[sign_type], img) + ' 1 0 0 50 50\n'
+                        with open('info.dat', 'a') as f:
+                            f.write(line)
+
     def form_positive_images(self, file_name='info', maxxangle=0.5, maxyangle=-0.5, maxzangle=0.5):
         file_count = len(os.walk(self.dirs['neg']).__next__()[2])
         positives_to_generate = file_count - 50
