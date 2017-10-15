@@ -4,3 +4,5 @@ cascadedata
 .vscode
 README.md
 *.pyc
+*.txt
+*.dat

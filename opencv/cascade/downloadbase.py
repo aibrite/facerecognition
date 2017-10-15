@@ -91,7 +91,7 @@ class CascadeImageProcessor(DownloadPath):
     def prepare_positives(self, positive_dir='img/raw_images'):
         print('Preparing positive images...')
         count = 1
-        for img in os.listdir(positive_dir):
+        for img in sorted(os.listdir(positive_dir)):
             image = cv2.imread(os.path.join(
                 positive_dir, img), cv2.IMREAD_COLOR)
             face_rect = image[50: 150, 50: 150]

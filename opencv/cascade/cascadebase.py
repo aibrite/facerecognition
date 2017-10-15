@@ -15,6 +15,8 @@ class HaarCascadeBase(CascadeImageProcessor):
 
         if not os.path.exists(os.path.join(self.cascade_dir, 'info')):
             os.makedirs(os.path.join(self.cascade_dir, 'info'))
+        if not os.path.exists(os.path.join(self.cascade_dir, 'data')):
+            os.makedirs(os.path.join(self.cascade_dir, 'data'))
 
     def printVideoMessage(self, message='', key_message=''):
         if message == '':
@@ -40,9 +42,10 @@ class HaarCascadeBase(CascadeImageProcessor):
         cap = cv2.VideoCapture(videoSource)
         self.printVideoMessage()
 
-        cascades = self.loadCascadeFile(cascade_files)
-        face_cascade = cascades[0]
-        eye_cascade = cascades[1]
+        face_cascade = self.loadCascadeFile(cascade_files)
+        # cascades = self.loadCascadeFile(cascade_files)
+        # face_cascade = cascades[0]
+        # eye_cascade = cascades[1]
 
         while True:
             _, frame = cap.read()
@@ -103,5 +106,13 @@ class HaarCascadeBase(CascadeImageProcessor):
     def form_positive_vector(self, file_name='positives', width=20, height=20):
         vector_file = os.path.join(self.cascade_dir, file_name + '.vec')
         print('Creating positive vector file...')
+        # subprocess.call(
+        #     'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.dat', self.positive_file_count, width, height, vector_file), shell=True)
         subprocess.call(
-            'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format(self.info_file, self.positive_file_count, width, height, vector_file), shell=True)
+            'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.dat', 3200, width, height, vector_file), shell=True)
+
+    def train_classifier(self, file_name='face_cascade', width=20, height=20):
+        # cascade_file = os.path.join(self.cascade_dir, file_name + '.vec')
+        print('Training Cascade Classifier...')
+        subprocess.call(
+            'opencv_traincascade -data cascadedata/data -vec cascadedata/positives.vec -bg bg.txt -numPos 2500 -numNeg 1200 -minHitRate 0.999 -maxFalseAlarmRate 0.5 -numStages 10 -w 20 -h 20', shell=True)
