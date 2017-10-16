@@ -114,13 +114,14 @@ class HaarCascadeBase(CascadeImageProcessor):
 
     def train_classifier(self, output_dir='cascadedata/data', vec_name='positives', num_stages=10, vec_width=20, vec_height=20, width=20, height=20):
         # cascade_file = os.path.join(self.cascade_dir, file_name + '.vec')
+        total_pos = len(os.walk(self.dirs['pos']).__next__()[2])
+        vec_samples = total_pos - 50
         self.form_positive_vector(
             vec_name, vec_samples, width=vec_width, height=vec_height)
 
-        vec_samples = len(os.walk(self.dirs['pos']).__next__()[2]) - 50
-
-        num_pos = len(os.walk(self.dirs['pos']).__next__()[2]) * 0.8
+        num_pos = total_pos * 0.8
         num_neg = num_pos / 2
+
         print('Training Cascade Classifier...')
         subprocess.call(
             'opencv_traincascade -data {0} -vec {1} -bg bg.txt -numPos {2} -numNeg {3} -minHitRate 0.999 -maxFalseAlarmRate 0.5 -numStages {4} -w {5} -h {6}'.format(output_dir, self.vector_file, num_pos, num_neg, num_stages, width, height), shell=True)
