@@ -16,6 +16,9 @@ class DownloadPath():
             'neg': os.path.join(self.download_dir, 'neg'),
             'uglies': os.path.join(self.download_dir, 'uglies')
         }
+        if not os.path.exists('raw_bg'):
+            os.makedirs('raw_bg')
+        self.bg_folder = 'raw_bg'
 
         self._check_directories()
 
@@ -63,7 +66,7 @@ class CascadeImageProcessor(DownloadPath):
     def download_and_process(self, urls, count=None):
         pic_count = count + 1
         base_url = self.dirs['neg']
-        socket.setdefaulttimeout(10)
+        # socket.setdefaulttimeout(10)
 
         for image_url in urls.split('\n'):
             try:

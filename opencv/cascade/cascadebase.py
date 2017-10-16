@@ -103,16 +103,24 @@ class HaarCascadeBase(CascadeImageProcessor):
         subprocess.call(
             'opencv_createsamples -img downloads/pos/watch5050.jpg -bg bg.txt -info {0} -pngoutput {1} -maxxangle {2} -maxyangle {3} -maxzangle {4} -num {5}'.format(info_file, output_dir, maxxangle, maxyangle, maxzangle, positives_to_generate), shell=True)
 
-    def form_positive_vector(self, file_name='positives', width=20, height=20):
+    def form_positive_vector(self, file_name, samples, width, height):
         vector_file = os.path.join(self.cascade_dir, file_name + '.vec')
+        self.vector_file = vector_file
         print('Creating positive vector file...')
         # subprocess.call(
         #     'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.dat', self.positive_file_count, width, height, vector_file), shell=True)
         subprocess.call(
-            'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.dat', 3200, width, height, vector_file), shell=True)
+            'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.dat', samples, width, height, vector_file), shell=True)
 
-    def train_classifier(self, file_name='face_cascade', width=20, height=20):
+    def train_classifier(self, output_dir='cascadedata/data', vec_name='positives', num_stages=10, vec_width=20, vec_height=20, width=20, height=20):
         # cascade_file = os.path.join(self.cascade_dir, file_name + '.vec')
+        self.form_positive_vector(
+            vec_name, vec_samples, width=vec_width, height=vec_height)
+
+        vec_samples = len(os.walk(self.dirs['pos']).__next__()[2]) - 50
+
+        num_pos = len(os.walk(self.dirs['pos']).__next__()[2]) * 0.8
+        num_neg = num_pos / 2
         print('Training Cascade Classifier...')
         subprocess.call(
-            'opencv_traincascade -data cascadedata/data -vec cascadedata/positives.vec -bg bg.txt -numPos 2500 -numNeg 1200 -minHitRate 0.999 -maxFalseAlarmRate 0.5 -numStages 10 -w 20 -h 20', shell=True)
+            'opencv_traincascade -data {0} -vec {1} -bg bg.txt -numPos {2} -numNeg {3} -minHitRate 0.999 -maxFalseAlarmRate 0.5 -numStages {4} -w {5} -h {6}'.format(output_dir, self.vector_file, num_pos, num_neg, num_stages, width, height), shell=True)
