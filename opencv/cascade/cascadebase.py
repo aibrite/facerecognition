@@ -86,29 +86,32 @@ class HaarCascadeBase(CascadeImageProcessor):
                         with open('info.dat', 'a') as f:
                             f.write(line)
 
-    def form_positive_images(self, file_name='info', maxxangle=0.5, maxyangle=-0.5, maxzangle=0.5):
-        file_count = len(os.walk(self.dirs['neg']).__next__()[2])
-        positives_to_generate = file_count - 50
-        self.positive_file_count = positives_to_generate
+    def create_positive_samples(self, file_name='info', positives_to_generate=50, maxxangle=0.5, maxyangle=-0.5, maxzangle=0.5):
+        # file_count = len(os.walk(self.bg_folder).__next__()[2])
+        # positives_to_generate = file_count - 50
+        # self.positive_file_count = positives_to_generate
 
         print('Total negative files: {}'.format(file_count))
         print('Creating positive images for {} negatives...'.format(
             positives_to_generate))
 
-        info_file = os.path.join(
-            self.cascade_dir, 'info', file_name + '.lst')
-        self.info_file = info_file
         output_dir = os.path.join(self.cascade_dir, 'info')
 
-        subprocess.call(
-            'opencv_createsamples -img downloads/pos/watch5050.jpg -bg bg.txt -info {0} -pngoutput {1} -maxxangle {2} -maxyangle {3} -maxzangle {4} -num {5}'.format(info_file, output_dir, maxxangle, maxyangle, maxzangle, positives_to_generate), shell=True)
+        pos_count = 0
+        for pos in os.path.listdir(self.dirs['pos']):
+            if int(os.path.splitext(pos)) % 5 == 0:
+                info_file = os.path.join(
+                    self.cascade_dir, 'info{}'.format(pos_count), file_name + '.lst')
+                pos_path = os.path.join(self.dirs['pos'], pos)
+                subprocess.call('opencv_createsamples -img {0} -bg bg.txt -info {1} -pngoutput {2} -maxxangle {3} -maxyangle {4} -maxzangle {5} -num {6}'.format(
+                    pos_path, info_file, output_dir, maxxangle, maxyangle, maxzangle, positives_to_generate), shell=True)
+                pos_count += 1
 
     def form_positive_vector(self, file_name, samples, width, height):
         vector_file = os.path.join(self.cascade_dir, file_name + '.vec')
         self.vector_file = vector_file
         print('Creating positive vector file...')
-        # subprocess.call(
-        #     'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.dat', self.positive_file_count, width, height, vector_file), shell=True)
+
         subprocess.call(
             'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.dat', samples, width, height, vector_file), shell=True)
 
