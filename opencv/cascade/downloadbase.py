@@ -16,9 +16,8 @@ class DownloadPath():
             'neg': os.path.join(self.download_dir, 'neg'),
             'uglies': os.path.join(self.download_dir, 'uglies')
         }
-        if not os.path.exists('raw_bg'):
-            os.makedirs('raw_bg')
-        self.bg_folder = 'raw_bg'
+
+        self.bg_folder = 'img/bg'
 
         self._check_directories()
 
@@ -27,6 +26,9 @@ class DownloadPath():
         for key, value in self.dirs.items():
             if not os.path.exists(self.dirs[key]):
                 os.makedirs(self.dirs[key])
+
+        if not os.path.exists('img/bg'):
+            os.makedirs('img/bg')
 
     def get_user_request(question):
         user_options = {
@@ -63,10 +65,12 @@ class CascadeImageProcessor(DownloadPath):
         cv2.imwrite(file_name, resized)
         print('Resized Grayscale Image Saved')
 
-    def download_and_process(self, urls, count=None):
+    def download_and_process(self, urls, count=None, raw_neg=False):
         pic_count = count + 1
-        base_url = self.dirs['neg']
-        # socket.setdefaulttimeout(10)
+        if raw_neg is False:
+            base_url = self.dirs['neg']
+        else:
+            base_url = self.bg_folder
 
         for image_url in urls.split('\n'):
             try:
@@ -83,13 +87,21 @@ class CascadeImageProcessor(DownloadPath):
 
         return pic_count
 
-    def prepare_negatives(self, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893']):
+    def prepare_negatives(self, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388'], bg_urls=['http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893']):
         last_neg = 0
+        last_bg = 0
 
         for neg_url in neg_urls:
-            neg_image_urls = urllib.request.urlopen(neg_url).read().decode()
+            neg_image_url_list = urllib.request.urlopen(
+                neg_url).read().decode()
             last_neg = self.download_and_process(
-                neg_image_urls, count=last_neg)
+                neg_image_url_list, count=last_neg, raw_neg=False)
+
+        for bg_url in bg_urls:
+            bg_url_list = urllib.request.urlopen(
+                bg_url).read().decode()
+            last_bg = self.download_and_process(
+                bg_url_list, count=last_bg, raw_neg=True)
 
     def prepare_positives(self, positive_dir='img/raw_images'):
         print('Preparing positive images...')
