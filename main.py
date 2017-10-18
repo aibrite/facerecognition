@@ -21,9 +21,11 @@ if __name__ == '__main__':
     #     print('Negative image download cancelled by user.')
 
     # cascadeBase.remove_uglies()
-    cascadeBase.create_desc_files()
-    cascadeBase.create_positive_samples(
-        file_name='info', positives_to_generate=50, maxxangle=0.5, maxyangle=-0.5, maxzangle=0.5)
+    # cascadeBase.create_desc_files()
+    # cascadeBase.create_positive_samples(
+    # file_name='info', positives_to_generate=50, maxxangle=0.5,
+    # maxyangle=-0.5, maxzangle=0.5)
+    cascadeBase.join_info_files()
     # cascadeBase.form_positive_vector()
     # cascadeBase.train_classifier(output_dir='cascadedata/data', vec_name='positives',
     # num_stages=10, vec_width=20, vec_height=20, width=20, height=20)

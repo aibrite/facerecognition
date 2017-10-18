@@ -89,7 +89,7 @@ class CascadeImageProcessor(DownloadPath):
 
     def prepare_negatives(self, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388'], bg_urls=['http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893']):
         last_neg = 0
-        last_bg = 0
+        # last_bg = 0
 
         for neg_url in neg_urls:
             neg_image_url_list = urllib.request.urlopen(
@@ -100,8 +100,11 @@ class CascadeImageProcessor(DownloadPath):
         for bg_url in bg_urls:
             bg_url_list = urllib.request.urlopen(
                 bg_url).read().decode()
-            last_bg = self.download_and_process(
-                bg_url_list, count=last_bg, raw_neg=True)
+            last_neg = self.download_and_process(
+                bg_url_list, count=last_neg, raw_neg=True)
+
+        for bg in os.listdir(self.bg_folder):
+            copy2(bg, self.dirs['neg'])
 
     def prepare_positives(self, positive_dir='img/raw_images'):
         print('Preparing positive images...')

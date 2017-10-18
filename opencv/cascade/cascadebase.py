@@ -17,6 +17,8 @@ class HaarCascadeBase(CascadeImageProcessor):
             os.makedirs(os.path.join(self.cascade_dir, 'info'))
         if not os.path.exists(os.path.join(self.cascade_dir, 'data')):
             os.makedirs(os.path.join(self.cascade_dir, 'data'))
+        if not os.path.exists(os.path.join(self.cascade_dir, 'pos')):
+            os.makedirs(os.path.join(self.cascade_dir, 'pos'))
 
     def printVideoMessage(self, message='', key_message=''):
         if message == '':
@@ -92,6 +94,21 @@ class HaarCascadeBase(CascadeImageProcessor):
             line = os.path.join(self.bg_folder, bg_sample) + '\n'
             with open('bg_sample.txt', 'a') as f:
                 f.write(line)
+
+    def join_info_files(self):
+        info_files = []
+        for folder in os.listdir(os.path.join(self.cascade_dir, 'info')):
+            for pos_file in os.listdir(os.path.join(self.cascade_dir, 'info', folder)):
+                if os.path.splitext(pos_file)[1] == '.lst':
+                    info_file = os.path.join(
+                        self.cascade_dir, 'info', folder, pos_file)
+                    info_files.append(info_file)
+
+        with open('cascadedata/pos/info.lst', 'a') as outfile:
+            for info_file in info_files:
+                with open(info_file) as infile:
+                    for line in infile:
+                        outfile.write(line)
 
     def create_positive_samples(self, file_name='info', positives_to_generate=50, maxxangle=0.5, maxyangle=-0.5, maxzangle=0.5):
         file_count = len(os.walk(self.bg_folder).__next__()[2])
