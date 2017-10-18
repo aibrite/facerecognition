@@ -69,6 +69,8 @@ class HaarCascadeBase(CascadeImageProcessor):
             os.remove('bg.txt')
         if os.path.exists('info.dat'):
             os.remove('info.dat')
+        if os.path.exists('bg_sample.txt'):
+            os.remove('bg_sample.txt')
 
         for sign_type in os.listdir(self.dirs['main']):
             if sign_type != 'neg' and sign_type != 'pos':
@@ -86,26 +88,37 @@ class HaarCascadeBase(CascadeImageProcessor):
                         with open('info.dat', 'a') as f:
                             f.write(line)
 
+        for bg_sample in os.listdir(self.bg_folder):
+            line = os.path.join(self.bg_folder, bg_sample) + '\n'
+            with open('bg_sample.txt', 'a') as f:
+                f.write(line)
+
     def create_positive_samples(self, file_name='info', positives_to_generate=50, maxxangle=0.5, maxyangle=-0.5, maxzangle=0.5):
-        # file_count = len(os.walk(self.bg_folder).__next__()[2])
+        file_count = len(os.walk(self.bg_folder).__next__()[2])
         # positives_to_generate = file_count - 50
         # self.positive_file_count = positives_to_generate
 
-        print('Total negative files: {}'.format(file_count))
-        print('Creating positive images for {} negatives...'.format(
-            positives_to_generate))
+        positives = []
+        for pos in os.listdir(self.dirs['pos']):
+            if int(os.path.splitext(pos)[0]) % 5 == 0:
+                positives.append(pos)
 
-        output_dir = os.path.join(self.cascade_dir, 'info')
+        print('Total background files: {}'.format(file_count))
+        print('Total positive files selected: {}'.format(len(positives)))
+        print('Samples to generate for each positive: {}'.format(
+            positives_to_generate))
+        print('Generating positive samples...')
 
         pos_count = 0
-        for pos in os.path.listdir(self.dirs['pos']):
-            if int(os.path.splitext(pos)) % 5 == 0:
-                info_file = os.path.join(
-                    self.cascade_dir, 'info{}'.format(pos_count), file_name + '.lst')
-                pos_path = os.path.join(self.dirs['pos'], pos)
-                subprocess.call('opencv_createsamples -img {0} -bg bg.txt -info {1} -pngoutput {2} -maxxangle {3} -maxyangle {4} -maxzangle {5} -num {6}'.format(
-                    pos_path, info_file, output_dir, maxxangle, maxyangle, maxzangle, positives_to_generate), shell=True)
-                pos_count += 1
+        for pos in positives:
+            info_file = os.path.join(
+                self.cascade_dir, 'info', str(pos_count), file_name + '.lst')
+            output_dir = os.path.join(self.cascade_dir, 'info', str(pos_count))
+            os.makedirs(output_dir)
+            pos_path = os.path.join(self.dirs['pos'], pos)
+            subprocess.call('opencv_createsamples -img {0} -bg bg_sample.txt -info {1} -pngoutput {2} -maxxangle {3} -maxyangle {4} -maxzangle {5} -num {6}'.format(
+                pos_path, info_file, output_dir, maxxangle, maxyangle, maxzangle, positives_to_generate), shell=True)
+            pos_count += 1
 
     def form_positive_vector(self, file_name, samples, width, height):
         vector_file = os.path.join(self.cascade_dir, file_name + '.vec')
