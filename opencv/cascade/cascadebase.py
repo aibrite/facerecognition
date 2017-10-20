@@ -3,6 +3,7 @@ import numpy as np
 import os
 import subprocess
 from opencv.cascade.downloadbase import CascadeImageProcessor
+from shutil import copy2
 
 
 class HaarCascadeBase(CascadeImageProcessor):
@@ -96,19 +97,44 @@ class HaarCascadeBase(CascadeImageProcessor):
                 f.write(line)
 
     def join_info_files(self):
+        print('Cascading info files...')
         info_files = []
-        for folder in os.listdir(os.path.join(self.cascade_dir, 'info')):
-            for pos_file in os.listdir(os.path.join(self.cascade_dir, 'info', folder)):
+        for folder in sorted(os.listdir(os.path.join(self.cascade_dir, 'info'))):
+            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dir, 'info', folder))):
                 if os.path.splitext(pos_file)[1] == '.lst':
                     info_file = os.path.join(
                         self.cascade_dir, 'info', folder, pos_file)
                     info_files.append(info_file)
 
-        with open('cascadedata/pos/info.lst', 'a') as outfile:
+        if os.path.exists('info.dat'):
+            os.remove('info.dat')
+
+        line_count = 0
+        with open('info.dat', 'a') as outfile:
             for info_file in info_files:
                 with open(info_file) as infile:
                     for line in infile:
+                        img = os.path.join(
+                            self.cascade_dir, 'pos', str(line_count))
+                        line = img + line[line.find('.'):]
                         outfile.write(line)
+                        line_count += 1
+        print('Generated positives reorganized.')
+
+    def copy_generated_pos(self):
+        print('Reorganizing generated positives...')
+        print('Copying and renaming generated positives...')
+        count = 0
+        for folder in sorted(os.listdir(os.path.join(self.cascade_dir, 'info'))):
+            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dir, 'info', folder))):
+                if os.path.splitext(pos_file)[1] != '.lst':
+                    img = cv2.imread(os.path.join(self.cascade_dir, 'info', folder,
+                                                  pos_file))
+                    cv2.imwrite(os.path.join(self.cascade_dir,
+                                             'pos', str(count) + '.jpg'), img)
+                    count += 1
+        print('Done.')
+        self.join_info_files()
 
     def create_positive_samples(self, file_name='info', positives_to_generate=50, maxxangle=0.5, maxyangle=-0.5, maxzangle=0.5):
         file_count = len(os.walk(self.bg_folder).__next__()[2])
@@ -147,13 +173,16 @@ class HaarCascadeBase(CascadeImageProcessor):
 
     def train_classifier(self, output_dir='cascadedata/data', vec_name='positives', num_stages=10, vec_width=20, vec_height=20, width=20, height=20):
         # cascade_file = os.path.join(self.cascade_dir, file_name + '.vec')
-        total_pos = len(os.walk(self.dirs['pos']).__next__()[2])
-        vec_samples = total_pos - 50
+        total_pos = len(os.walk(os.path.join(
+            self.cascade_dir, 'pos')).__next__()[2])
+        vec_samples = 1600
         self.form_positive_vector(
             vec_name, vec_samples, width=vec_width, height=vec_height)
 
-        num_pos = total_pos * 0.8
-        num_neg = num_pos / 2
+        # num_pos = total_pos * 0.4
+        num_pos = 1400
+        num_neg = 1400
+        # num_neg = num_pos / 2
 
         print('Training Cascade Classifier...')
         subprocess.call(
