@@ -17,6 +17,8 @@ class DownloadPath():
             'uglies': os.path.join(self.download_dir, 'uglies')
         }
 
+        self.link_dir = 'links'
+
         self.bg_folder = 'img/bg'
 
         self._check_directories()
@@ -29,6 +31,9 @@ class DownloadPath():
 
         if not os.path.exists(self.bg_folder):
             os.makedirs(self.bg_folder)
+
+        if not os.path.exists(self.link_dir):
+            os.makedirs(self.link_dir)
 
     def get_user_request(question):
         user_options = {
@@ -67,10 +72,14 @@ class CascadeImageProcessor(DownloadPath):
 
     def download_and_process(self, urls, count=None, raw_neg=False):
         pic_count = count + 1
+        base_url = ''
+        link_file = ''
         if raw_neg is False:
             base_url = self.dirs['neg']
+            link_file = os.path.join(self.link_dir, 'negative_urls.txt')
         else:
             base_url = self.bg_folder
+            link_file = os.path.join(self.link_dir, 'background_urls.txt')
 
         for image_url in urls.split('\n'):
             try:
@@ -80,6 +89,10 @@ class CascadeImageProcessor(DownloadPath):
                     image_url, os.path.join(base_url, str(pic_count) + '.jpg'))
                 self.grayscale_and_save(
                     os.path.join(base_url, str(pic_count) + '.jpg'))
+
+                with open(link_file, 'a') as f:
+                    line = image_url + '\n'
+                    f.write(line)
                 pic_count += 1
 
             except Exception as err:

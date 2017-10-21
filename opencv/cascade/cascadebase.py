@@ -182,7 +182,7 @@ class HaarCascadeBase(CascadeImageProcessor):
         subprocess.call(
             'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.lst', samples, width, height, vector_file), shell=True)
 
-    def train_classifier(self, output_dir=self.cascade_dirs['data'], vec_name='positives', num_stages=10, vec_width=20, vec_height=20, width=20, height=20):
+    def train_classifier(self, output_dir='cascade/data', vec_name='positives', num_stages=10, vec_width=20, vec_height=20, width=20, height=20):
         # cascade_file = os.path.join(self.cascade_dir, file_name + '.vec')
         total_pos = len(os.walk(os.path.join(
             self.cascade_dir, 'pos')).__next__()[2])
