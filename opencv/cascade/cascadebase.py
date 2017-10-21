@@ -13,13 +13,18 @@ class HaarCascadeBase(CascadeImageProcessor):
         self.cascade_dir = cascade_dir
         self.positive_file_count = 0
         self.info_file = ''
+        self.generated_pos_dir = os.path.join(self.cascade_dir, 'pos')
 
-        if not os.path.exists(os.path.join(self.cascade_dir, 'info')):
-            os.makedirs(os.path.join(self.cascade_dir, 'info'))
-        if not os.path.exists(os.path.join(self.cascade_dir, 'data')):
-            os.makedirs(os.path.join(self.cascade_dir, 'data'))
-        if not os.path.exists(os.path.join(self.cascade_dir, 'pos')):
-            os.makedirs(os.path.join(self.cascade_dir, 'pos'))
+        self.cascade_dirs = {
+            'main': self.cascade_dir,
+            'data': os.path.join(self.cascade_dir, 'data'),
+            'info': os.path.join(self.cascade_dir, 'info'),
+            'pos': os.path.join(self.cascade_dir, 'pos')
+        }
+
+        for key, value in self.cascade_dirs.items():
+            if not os.path.exists(self.cascade_dirs[key]):
+                os.makedirs(self.cascade_dirs[key])
 
     def printVideoMessage(self, message='', key_message=''):
         if message == '':
@@ -96,45 +101,50 @@ class HaarCascadeBase(CascadeImageProcessor):
             with open('bg_sample.txt', 'a') as f:
                 f.write(line)
 
-    def join_info_files(self):
+    def join_info_files(self, pos_num):
         print('Cascading info files...')
         info_files = []
-        for folder in sorted(os.listdir(os.path.join(self.cascade_dir, 'info'))):
-            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dir, 'info', folder))):
+        for folder in sorted(os.listdir(self.cascade_dirs['info'])):
+            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dirs['info'], folder))):
                 if os.path.splitext(pos_file)[1] == '.lst':
                     info_file = os.path.join(
-                        self.cascade_dir, 'info', folder, pos_file)
+                        self.cascade_dirs['info'], folder, pos_file)
                     info_files.append(info_file)
 
-        if os.path.exists('info.dat'):
-            os.remove('info.dat')
+        if os.path.exists('info.lst'):
+            os.remove('info.lst')
 
         line_count = 0
-        with open('info.dat', 'a') as outfile:
+        with open('info.lst', 'a') as outfile:
             for info_file in info_files:
                 with open(info_file) as infile:
                     for line in infile:
                         img = os.path.join(
-                            self.cascade_dir, 'pos', str(line_count))
+                            self.cascade_dirs['pos'], str(line_count))
                         line = img + line[line.find('.'):]
                         outfile.write(line)
+                        if line_count == pos_num:
+                            break
                         line_count += 1
         print('Generated positives reorganized.')
 
-    def copy_generated_pos(self):
+    def copy_generated_pos(self, desired_num=4000):
         print('Reorganizing generated positives...')
         print('Copying and renaming generated positives...')
         count = 0
-        for folder in sorted(os.listdir(os.path.join(self.cascade_dir, 'info'))):
-            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dir, 'info', folder))):
+        for folder in sorted(os.listdir(self.cascade_dirs['info'])):
+            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dirs['info'], folder))):
                 if os.path.splitext(pos_file)[1] != '.lst':
-                    img = cv2.imread(os.path.join(self.cascade_dir, 'info', folder,
+                    img = cv2.imread(os.path.join(self.cascade_dirs['info'], folder,
                                                   pos_file))
-                    cv2.imwrite(os.path.join(self.cascade_dir,
-                                             'pos', str(count) + '.jpg'), img)
+                    cv2.imwrite(os.path.join(
+                        self.cascade_dirs['pos'], str(count) + '.jpg'), img)
+                    if count == desired_num:
+                        break
                     count += 1
+
         print('Done.')
-        self.join_info_files()
+        self.join_info_files(desired_num)
 
     def create_positive_samples(self, file_name='info', positives_to_generate=50, maxxangle=0.5, maxyangle=-0.5, maxzangle=0.5):
         file_count = len(os.walk(self.bg_folder).__next__()[2])
@@ -155,8 +165,9 @@ class HaarCascadeBase(CascadeImageProcessor):
         pos_count = 0
         for pos in positives:
             info_file = os.path.join(
-                self.cascade_dir, 'info', str(pos_count), file_name + '.lst')
-            output_dir = os.path.join(self.cascade_dir, 'info', str(pos_count))
+                self.cascade_dirs['info'], str(pos_count), file_name + '.lst')
+            output_dir = os.path.join(
+                self.cascade_dirs['info'], str(pos_count))
             os.makedirs(output_dir)
             pos_path = os.path.join(self.dirs['pos'], pos)
             subprocess.call('opencv_createsamples -img {0} -bg bg_sample.txt -info {1} -pngoutput {2} -maxxangle {3} -maxyangle {4} -maxzangle {5} -num {6}'.format(
@@ -169,18 +180,18 @@ class HaarCascadeBase(CascadeImageProcessor):
         print('Creating positive vector file...')
 
         subprocess.call(
-            'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.dat', samples, width, height, vector_file), shell=True)
+            'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.lst', samples, width, height, vector_file), shell=True)
 
-    def train_classifier(self, output_dir='cascadedata/data', vec_name='positives', num_stages=10, vec_width=20, vec_height=20, width=20, height=20):
+    def train_classifier(self, output_dir=self.cascade_dirs['data'], vec_name='positives', num_stages=10, vec_width=20, vec_height=20, width=20, height=20):
         # cascade_file = os.path.join(self.cascade_dir, file_name + '.vec')
         total_pos = len(os.walk(os.path.join(
             self.cascade_dir, 'pos')).__next__()[2])
-        vec_samples = 1600
+        vec_samples = 4000
         self.form_positive_vector(
             vec_name, vec_samples, width=vec_width, height=vec_height)
 
         # num_pos = total_pos * 0.4
-        num_pos = 1400
+        num_pos = 3000
         num_neg = 1400
         # num_neg = num_pos / 2
 

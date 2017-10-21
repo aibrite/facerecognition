@@ -27,8 +27,8 @@ class DownloadPath():
             if not os.path.exists(self.dirs[key]):
                 os.makedirs(self.dirs[key])
 
-        if not os.path.exists('img/bg'):
-            os.makedirs('img/bg')
+        if not os.path.exists(self.bg_folder):
+            os.makedirs(self.bg_folder)
 
     def get_user_request(question):
         user_options = {
@@ -87,7 +87,7 @@ class CascadeImageProcessor(DownloadPath):
 
         return pic_count
 
-    def prepare_negatives(self, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388'], bg_urls=['http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893']):
+    def prepare_negatives(self, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n09287968'], bg_urls=['http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893']):
         last_neg = 0
         # last_bg = 0
 
@@ -114,7 +114,8 @@ class CascadeImageProcessor(DownloadPath):
                 positive_dir, img), cv2.IMREAD_COLOR)
             face_rect = image[50: 150, 50: 150]
             resized = self.resize_image(face_rect, is_neg=False)
-            cv2.imwrite('downloads/pos/' + str(count) + '.jpg', resized)
+            cv2.imwrite(os.path.join(
+                self.dirs['pos'], str(count) + '.jpg'), resized)
             count += 1
 
         print('Raw image preparation completed')
@@ -166,6 +167,26 @@ class CascadeImageProcessor(DownloadPath):
 
                         except Exception as err:
                             print(str(err))
+
+            for img in os.listdir(self.bg_folder):
+                for ugly in os.listdir(self.dirs['uglies']):
+
+                    try:
+                        current_img_path = os.path.join(
+                            self.bg_folder, img)
+                        ugly_img = cv2.imread(os.path.join(
+                            self.dirs['uglies'], ugly))
+                        current_img = cv2.imread(current_img_path)
+
+                        if ugly_img.shape == current_img.shape and not (np.bitwise_xor(ugly_img, current_img).any()):
+                            print('Ugly image found: {}'.format(
+                                current_img_path))
+                            print('Image removed')
+                            os.remove(current_img_path)
+                            count += 1
+
+                    except Exception as err:
+                        print(str(err))
 
             print(
                 'Ugly images successfully removed. Total uglies removed: {0}'.format(count))
