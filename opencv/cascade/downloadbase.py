@@ -101,8 +101,14 @@ class CascadeImageProcessor(DownloadPath):
         return pic_count
 
     def prepare_negatives(self, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n09287968'], bg_urls=['http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893']):
+
+        if os.path.exists(os.path.join(self.link_dir, 'negative_urls.txt')):
+            os.remove(os.path.join(self.link_dir, 'negative_urls.txt'))
+
+        if os.path.exists(os.path.join(self.link_dir, 'background_urls.txt')):
+            os.remove(os.path.join(self.link_dir, 'background_urls.txt'))
+
         last_neg = 0
-        # last_bg = 0
 
         for neg_url in neg_urls:
             neg_image_url_list = urllib.request.urlopen(

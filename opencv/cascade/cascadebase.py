@@ -105,11 +105,14 @@ class HaarCascadeBase(CascadeImageProcessor):
         if os.path.exists('bg_sample.txt'):
             os.remove('bg_sample.txt')
 
-        for i in range(0, bg_count * 2):
-            for bg_sample in os.listdir(self.bg_folder):
-                line = os.path.join(self.bg_folder, bg_sample) + '\n'
-                with open('bg_sample.txt', 'a') as f:
-                    f.write(line)
+        count = 0
+        for bg_sample in os.listdir(self.bg_folder):
+            line = os.path.join(self.bg_folder, bg_sample) + '\n'
+            with open('bg_sample.txt', 'a') as f:
+                f.write(line)
+            if count == bg_count * 2:
+                break
+            count += 1
 
     def create_positive_samples(self, file_name='info', positives_to_generate=50, maxxangle=0.5, maxyangle=-0.5, maxzangle=0.5):
         file_count = len(os.walk(self.bg_folder).__next__()[2])
