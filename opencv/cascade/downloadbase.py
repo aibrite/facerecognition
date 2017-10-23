@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import os
 from shutil import copy2
-import socket
+import requests
 
 
 class DownloadPath():
@@ -164,15 +164,34 @@ class CascadeImageProcessor(DownloadPath):
         remove_request = self.identify_uglies()
         if remove_request is True:
             count = 0
-            for sign_path in os.listdir(self.dirs['main']):
-                if sign_path == 'uglies':
-                    continue
-                for img in os.listdir(self.dirs[sign_path]):
-                    for ugly in os.listdir(self.dirs['uglies']):
+            # for sign_path in os.listdir(self.dirs['main']):
+            #     if sign_path == 'uglies':
+            #         continue
+            #     for img in os.listdir(self.dirs[sign_path]):
+            #         for ugly in os.listdir(self.dirs['uglies']):
 
+            #             try:
+            #                 current_img_path = os.path.join(
+            #                     self.dirs[sign_path], img)
+            #                 ugly_img = cv2.imread(os.path.join(
+            #                     self.dirs['uglies'], ugly))
+            #                 current_img = cv2.imread(current_img_path)
+
+            #                 if ugly_img.shape == current_img.shape and not (np.bitwise_xor(ugly_img, current_img).any()):
+            #                     print('Ugly image found: {}'.format(
+            #                         current_img_path))
+            #                     print('Image removed')
+            #                     os.remove(current_img_path)
+            #                     count += 1
+
+            #             except Exception as err:
+            #                 print(str(err))
+
+            for folder in [self.bg_folder, self.dirs['pos'], self.dirs['neg']]:
+                for img in os.listdir(folder):
+                    for ugly in os.listdir(self.dirs['uglies']):
                         try:
-                            current_img_path = os.path.join(
-                                self.dirs[sign_path], img)
+                            current_img_path = os.path.join(folder, img)
                             ugly_img = cv2.imread(os.path.join(
                                 self.dirs['uglies'], ugly))
                             current_img = cv2.imread(current_img_path)
@@ -187,25 +206,25 @@ class CascadeImageProcessor(DownloadPath):
                         except Exception as err:
                             print(str(err))
 
-            for img in os.listdir(self.bg_folder):
-                for ugly in os.listdir(self.dirs['uglies']):
+            # for img in os.listdir(self.bg_folder):
+            #     for ugly in os.listdir(self.dirs['uglies']):
 
-                    try:
-                        current_img_path = os.path.join(
-                            self.bg_folder, img)
-                        ugly_img = cv2.imread(os.path.join(
-                            self.dirs['uglies'], ugly))
-                        current_img = cv2.imread(current_img_path)
+            #         try:
+            #             current_img_path = os.path.join(
+            #                 self.bg_folder, img)
+            #             ugly_img = cv2.imread(os.path.join(
+            #                 self.dirs['uglies'], ugly))
+            #             current_img = cv2.imread(current_img_path)
 
-                        if ugly_img.shape == current_img.shape and not (np.bitwise_xor(ugly_img, current_img).any()):
-                            print('Ugly image found: {}'.format(
-                                current_img_path))
-                            print('Image removed')
-                            os.remove(current_img_path)
-                            count += 1
+            #             if ugly_img.shape == current_img.shape and not (np.bitwise_xor(ugly_img, current_img).any()):
+            #                 print('Ugly image found: {}'.format(
+            #                     current_img_path))
+            #                 print('Image removed')
+            #                 os.remove(current_img_path)
+            #                 count += 1
 
-                    except Exception as err:
-                        print(str(err))
+            #         except Exception as err:
+            #             print(str(err))
 
             print(
                 'Ugly images successfully removed. Total uglies removed: {0}'.format(count))
