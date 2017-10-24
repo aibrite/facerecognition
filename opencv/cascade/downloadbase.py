@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import os
 from shutil import copy2
-import requests
 
 
 class DownloadPath():
@@ -70,10 +69,11 @@ class CascadeImageProcessor(DownloadPath):
         cv2.imwrite(file_name, resized)
         print('Resized Grayscale Image Saved')
 
-    def download_and_process(self, urls, count=None, raw_neg=False):
+    def download_and_process(self, clean, count=None, raw_neg=False):
         pic_count = count + 1
         base_url = ''
         link_file = ''
+
         if raw_neg is False:
             base_url = self.dirs['neg']
             link_file = os.path.join(self.link_dir, 'negative_urls.txt')
@@ -81,46 +81,62 @@ class CascadeImageProcessor(DownloadPath):
             base_url = self.bg_folder
             link_file = os.path.join(self.link_dir, 'background_urls.txt')
 
-        for image_url in urls.split('\n'):
+        urls_arr = []
+        with open(link_file, encoding='utf-8') as f:
+            urls = f.read()
+            urls_arr = urls.splitlines()
+            f.close()
+
+        for image_url in urls_arr:
             try:
                 print('Downloading Image No {}: {}'.format(pic_count, image_url))
-
                 urllib.request.urlretrieve(
                     image_url, os.path.join(base_url, str(pic_count) + '.jpg'))
                 self.grayscale_and_save(
                     os.path.join(base_url, str(pic_count) + '.jpg'))
 
-                with open(link_file, 'a') as f:
-                    line = image_url + '\n'
-                    f.write(line)
                 pic_count += 1
 
             except Exception as err:
                 print(str(err))
+                if clean is True:
+                    with open(link_file, 'w', encoding='utf-8') as outfile:
+                        for line in urls_arr:
+                            if line != image_url:
+                                outfile.write(line + '\n')
+                            else:
+                                urls_arr.remove(line)
+                        outfile.close()
 
         return pic_count
 
-    def prepare_negatives(self, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n09287968'], bg_urls=['http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893']):
-
-        if os.path.exists(os.path.join(self.link_dir, 'negative_urls.txt')):
-            os.remove(os.path.join(self.link_dir, 'negative_urls.txt'))
-
-        if os.path.exists(os.path.join(self.link_dir, 'background_urls.txt')):
-            os.remove(os.path.join(self.link_dir, 'background_urls.txt'))
+    def prepare_negatives(self, clean_false_links=False, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n09287968'], bg_urls=['http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893']):
 
         last_neg = 0
 
-        for neg_url in neg_urls:
-            neg_image_url_list = urllib.request.urlopen(
-                neg_url).read().decode()
-            last_neg = self.download_and_process(
-                neg_image_url_list, count=last_neg, raw_neg=False)
+        if not os.path.exists(os.path.join(self.link_dir, 'negative_urls.txt')):
+            for neg_url in neg_urls:
+                neg_image_url_list = urllib.request.urlopen(
+                    neg_url).read().decode()
+                for link in neg_image_url_list.split('\n'):
+                    with open(os.path.join(self.link_dir, 'negative_urls.txt'), 'a', encoding='utf-8') as f:
+                        f.write(link)
+                        f.close()
 
-        for bg_url in bg_urls:
-            bg_url_list = urllib.request.urlopen(
-                bg_url).read().decode()
-            last_neg = self.download_and_process(
-                bg_url_list, count=last_neg, raw_neg=True)
+        last_neg = self.download_and_process(
+            clean_false_links, count=last_neg, raw_neg=False)
+
+        if not os.path.exists(os.path.join(self.link_dir, 'background_urls.txt')):
+            for bg_url in bg_urls:
+                bg_image_url_list = urllib.request.urlopen(
+                    bg_url).read().decode()
+                for link in bg_image_url_list.split('\n'):
+                    with open(os.path.join(self.link_dir, 'background_urls.txt'), 'a', encoding='utf-8') as f:
+                        f.write(link)
+                        f.close()
+
+        last_neg = self.download_and_process(
+            clean_false_links, count=last_neg, raw_neg=True)
 
         for bg in os.listdir(self.bg_folder):
             copy2(bg, self.dirs['neg'])

@@ -15,16 +15,16 @@ if __name__ == '__main__':
     download_choice = DownloadPath.get_user_request(
         'Downlaod negative images?')
     if download_choice is 'Yes':
-        cascadeBase.prepare_negatives(neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n09287968'], bg_urls=[
+        cascadeBase.prepare_negatives(clean_false_links=True, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n09287968'], bg_urls=[
                                       'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893'])
     else:
         print('Negative image download cancelled by user.')
 
     cascadeBase.remove_uglies()
-    cascadeBase.create_desc_files()
-    cascadeBase.create_positive_samples(
-        file_name='info', positives_to_generate=50, maxxangle=0.5,
-        maxyangle=-0.5, maxzangle=0.5)
+    # cascadeBase.create_desc_files()
+    # cascadeBase.create_positive_samples(
+    #     file_name='info', positives_to_generate=50, maxxangle=0.5,
+    #     maxyangle=-0.5, maxzangle=0.5)
     # cascadeBase.copy_generated_pos()
     # cascadeBase.form_positive_vector()
     # cascadeBase.train_classifier(output_dir='cascadedata/data', vec_name='positives',
