@@ -12,20 +12,6 @@ class DownloadPath():
 
         self.download_dirs = DownloadDirs(download_dir)
 
-        self._check_directories()
-
-    def _check_directories(self):
-
-        for folder in self.download_dirs.get_sub_dirs():
-            if not os.path.exists(folder):
-                os.makedirs(folder)
-
-        if not os.path.exists(self.download_dirs.bg_folder):
-            os.makedirs(self.download_dirs.bg_folder)
-
-        if not os.path.exists(self.download_dirs.link_dir):
-            os.makedirs(self.download_dirs.link_dir)
-
     def get_user_request(question):
         user_options = {
             'y': 'Yes',

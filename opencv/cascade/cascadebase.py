@@ -15,13 +15,6 @@ class HaarCascadeBase(CascadeImageProcessor):
         self.info_file = ''
 
         self.cascade_dirs = CascadeDirs(cascade_dir=cascade_dir)
-        self._check_cascade_directories()
-
-    def _check_cascade_directories(self):
-        super()._check_directories()
-        for folder in self.cascade_dirs.get_sub_dirs():
-            if not os.path.exists(folder):
-                os.makedirs(folder)
 
     def printVideoMessage(self, message='', key_message=''):
         if message == '':
