@@ -148,7 +148,7 @@ class HaarCascadeBase(CascadeImageProcessor):
         print('Copying and renaming generated positives...')
         count = 0
         for folder in sorted(os.listdir(self.cascade_dirs['pos'])):
-            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dirs['pos'], folder))):
+            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dirs['pos'], folder), key=lambda x: int(os.path.splitext(x)[0]))):
                 if os.path.splitext(pos_file)[1] != '.lst':
                     img = cv2.imread(os.path.join(self.cascade_dirs['pos'], folder,
                                                   pos_file))
@@ -158,14 +158,14 @@ class HaarCascadeBase(CascadeImageProcessor):
                         break
                     count += 1
 
-        print('Done.')
+        print('Positives copied.')
         self.join_info_files(desired_num)
 
     def join_info_files(self, pos_num):
         print('Cascading info files...')
         info_files = []
         for folder in sorted(os.listdir(self.cascade_dirs['pos'])):
-            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dirs['pos'], folder))):
+            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dirs['pos'], folder), key=lambda x: int(os.path.splitext(x)[0]))):
                 if os.path.splitext(pos_file)[1] == '.lst':
                     info_file = os.path.join(
                         self.cascade_dirs['pos'], folder, pos_file)
