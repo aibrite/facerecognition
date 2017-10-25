@@ -12,27 +12,36 @@ class DownloadPath():
 
         self.download_dirs = DownloadDirs(download_dir)
 
-    def get_user_request(question):
-        user_options = {
-            'y': 'Yes',
-            'n': 'No'
-        }
+    # def get_user_request(question):
+    #     user_options = {
+    #         'y': 'Yes',
+    #         'n': 'No'
+    #     }
 
-        prompt = ''
-        for key, value in user_options.items():
-            line = 'Type {0} for {1}\n'.format(key, value)
-            prompt += line
+    #     prompt = ''
+    #     for key, value in user_options.items():
+    #         line = 'Type {0} for {1}\n'.format(key, value)
+    #         prompt += line
 
-        user_selection = input(
-            '{0}\n{1}'.format(question, prompt))
+    #     user_selection = input(
+    #         '{0}\n{1}'.format(question, prompt))
 
-        return user_options.get(user_selection, 'n')
+    #     return user_options.get(user_selection, 'n')
 
 
 class CascadeImageProcessor(DownloadPath):
 
     def __init__(self, download_dir='downloads'):
         super().__init__(download_dir)
+
+    def create_link_files(self, urls, bg=False):
+        for url in urls:
+            url_list = urllib.request.urlopen(
+                url).read().decode()
+            for link in url_list.split('\n'):
+                with open(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt' if bg is False else 'background_urls.txt'), 'a', encoding='utf-8') as f:
+                    f.write(link)
+                    f.close()
 
     def resize_image(self, image, is_neg=True):
         if is_neg is True:
@@ -95,26 +104,28 @@ class CascadeImageProcessor(DownloadPath):
         last_neg = 0
 
         if not os.path.exists(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt')):
-            for neg_url in neg_urls:
-                neg_image_url_list = urllib.request.urlopen(
-                    neg_url).read().decode()
-                for link in neg_image_url_list.split('\n'):
-                    with open(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt'), 'a', encoding='utf-8') as f:
-                        f.write(link)
-                        f.close()
+            self.create_link_files(neg_urls, bg=False)
+            # for neg_url in neg_urls:
+            #     neg_image_url_list = urllib.request.urlopen(
+            #         neg_url).read().decode()
+            #     for link in neg_image_url_list.split('\n'):
+            #         with open(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt'), 'a', encoding='utf-8') as f:
+            #             f.write(link)
+            #             f.close()
 
         last_neg = self.download_and_process(
             clean_false_links, count=last_neg, raw_neg=False)
 
         if not os.path.exists(os.path.join(self.download_dirs.link_dir, 'background_urls.txt')) and os.path.exists(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt')):
             last_neg = len(os.listdir(self.download_dirs.neg))
-            for bg_url in bg_urls:
-                bg_image_url_list = urllib.request.urlopen(
-                    bg_url).read().decode()
-                for link in bg_image_url_list.split('\n'):
-                    with open(os.path.join(self.download_dirs.link_dir, 'background_urls.txt'), 'a', encoding='utf-8') as f:
-                        f.write(link)
-                        f.close()
+            self.create_link_files(bg_urls, bg=True)
+            # for bg_url in bg_urls:
+            #     bg_image_url_list = urllib.request.urlopen(
+            #         bg_url).read().decode()
+            #     for link in bg_image_url_list.split('\n'):
+            #         with open(os.path.join(self.download_dirs.link_dir, 'background_urls.txt'), 'a', encoding='utf-8') as f:
+            #             f.write(link)
+            #             f.close()
 
         last_neg = self.download_and_process(
             clean_false_links, count=last_neg, raw_neg=True)

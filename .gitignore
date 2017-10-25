@@ -7,3 +7,4 @@ README.md
 *.txt
 *.dat
 bg
+!negative_urls.txt
