@@ -13,12 +13,8 @@ if __name__ == '__main__':
     else:
         print('Positive image preparation cancelled by user.')
 
-    download_negatives = Prompt.get_user_request('Download negative images?')
-    if download_negatives:
-        cascadeBase.prepare_negatives(clean_false_links=True, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n09287968', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n12992868', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n00017222'], bg_urls=[
-                                      'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893'])
-    else:
-        print('Negative image download cancelled by user.')
+    cascadeBase.prepare_negatives(clean_false_links=True, neg_urls=['http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=n00015388', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n09287968', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n12992868', 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n00017222'], bg_urls=[
+        'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04105893'])
 
     cascadeBase.remove_uglies()
     # cascadeBase.create_desc_files()

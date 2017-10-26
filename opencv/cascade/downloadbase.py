@@ -4,6 +4,7 @@ import numpy as np
 import os
 from shutil import copy2
 from opencv.cascade.paths import DownloadDirs
+from opencv.helper.prompt import Prompt
 
 
 class DownloadPath():
@@ -103,35 +104,40 @@ class CascadeImageProcessor(DownloadPath):
 
         last_neg = 0
 
-        if not os.path.exists(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt')):
-            self.create_link_files(neg_urls, bg=False)
-            # for neg_url in neg_urls:
-            #     neg_image_url_list = urllib.request.urlopen(
-            #         neg_url).read().decode()
-            #     for link in neg_image_url_list.split('\n'):
-            #         with open(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt'), 'a', encoding='utf-8') as f:
-            #             f.write(link)
-            #             f.close()
+        negative_prompt = Prompt.get_user_request('Download negative images?')
+        background_prompt = Prompt.get_user_request(
+            'Download background images?')
+        if negative_prompt:
+            if not os.path.exists(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt')):
+                self.create_link_files(neg_urls, bg=False)
+                # for neg_url in neg_urls:
+                #     neg_image_url_list = urllib.request.urlopen(
+                #         neg_url).read().decode()
+                #     for link in neg_image_url_list.split('\n'):
+                #         with open(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt'), 'a', encoding='utf-8') as f:
+                #             f.write(link)
+                #             f.close()
 
-        last_neg = self.download_and_process(
-            clean_false_links, count=last_neg, raw_neg=False)
+            last_neg = self.download_and_process(
+                clean_false_links, count=last_neg, raw_neg=False)
 
-        if not os.path.exists(os.path.join(self.download_dirs.link_dir, 'background_urls.txt')) and os.path.exists(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt')):
-            last_neg = len(os.listdir(self.download_dirs.neg))
-            self.create_link_files(bg_urls, bg=True)
-            # for bg_url in bg_urls:
-            #     bg_image_url_list = urllib.request.urlopen(
-            #         bg_url).read().decode()
-            #     for link in bg_image_url_list.split('\n'):
-            #         with open(os.path.join(self.download_dirs.link_dir, 'background_urls.txt'), 'a', encoding='utf-8') as f:
-            #             f.write(link)
-            #             f.close()
+        if background_prompt:
+            if not os.path.exists(os.path.join(self.download_dirs.link_dir, 'background_urls.txt')) and os.path.exists(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt')):
+                last_neg = len(os.listdir(self.download_dirs.neg))
+                self.create_link_files(bg_urls, bg=True)
+                # for bg_url in bg_urls:
+                #     bg_image_url_list = urllib.request.urlopen(
+                #         bg_url).read().decode()
+                #     for link in bg_image_url_list.split('\n'):
+                #         with open(os.path.join(self.download_dirs.link_dir, 'background_urls.txt'), 'a', encoding='utf-8') as f:
+                #             f.write(link)
+                #             f.close()
 
-        last_neg = self.download_and_process(
-            clean_false_links, count=last_neg, raw_neg=True)
+            last_neg = self.download_and_process(
+                clean_false_links, count=last_neg, raw_neg=True)
 
-        for bg in os.listdir(self.download_dirs.bg_folder):
-            copy2(bg, self.download_dirs.neg)
+            for bg in os.listdir(self.download_dirs.bg_folder):
+                copy2(bg, self.download_dirs.neg)
 
     def prepare_positives(self, positive_dir='img/raw_images'):
         print('Preparing positive images...')
