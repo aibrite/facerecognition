@@ -6,5 +6,7 @@ README.md
 *.pyc
 *.txt
 *.dat
+*.lst
+*.vec
 bg
 !negative_urls.txt

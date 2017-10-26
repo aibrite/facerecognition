@@ -138,7 +138,8 @@ class CascadeImageProcessor(DownloadPath):
                 clean_false_links, count=last_neg, raw_neg=True)
 
             for bg in os.listdir(self.download_dirs.bg_folder):
-                copy2(bg, self.download_dirs.neg)
+                copy2(os.path.join(self.download_dirs.bg_folder, bg),
+                      self.download_dirs.neg)
 
     def prepare_positives(self, positive_dir='img/raw_images'):
         print('Preparing positive images...')

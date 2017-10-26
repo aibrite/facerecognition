@@ -127,12 +127,19 @@ class HaarCascadeBase(CascadeImageProcessor):
                 pos_path, info_file, output_dir, maxxangle, maxyangle, maxzangle, positives_to_generate), shell=True)
             pos_count += 1
 
-    def copy_generated_pos(self, desired_num=4000):
+    def copy_generated_pos(self, desired_num=6500):
         print('Reorganizing generated positives...')
         print('Copying and renaming generated positives...')
-        count = 0
-        for folder in sorted(os.listdir(self.cascade_dirs.pos)):
-            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dirs.pos, folder), key=lambda x: int(os.path.splitext(x)[0]))):
+        count = 1
+        for folder in sorted(os.listdir(self.cascade_dirs.pos), key=lambda x: int(os.path.splitext(x)[0])):
+            pos_list = []
+            for pos in os.listdir(os.path.join(self.cascade_dirs.pos, folder)):
+                if os.path.splitext(pos)[1] != '.lst':
+                    pos_list.append(pos)
+            # for pos_file in
+            # sorted(os.listdir(os.path.join(self.cascade_dirs.pos, folder)),
+            # key=lambda x: int(os.path.splitext(x)[0])):
+            for pos_file in sorted(pos_list, key=lambda x: int(os.path.splitext(x)[0])):
                 if os.path.splitext(pos_file)[1] != '.lst':
                     img = cv2.imread(os.path.join(self.cascade_dirs.pos, folder,
                                                   pos_file))
@@ -148,8 +155,8 @@ class HaarCascadeBase(CascadeImageProcessor):
     def join_info_files(self, pos_num):
         print('Cascading info files...')
         info_files = []
-        for folder in sorted(os.listdir(self.cascade_dirs.pos)):
-            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dirs.pos, folder), key=lambda x: int(os.path.splitext(x)[0]))):
+        for folder in sorted(os.listdir(self.cascade_dirs.pos), key=lambda x: int(os.path.splitext(x)[0])):
+            for pos_file in sorted(os.listdir(os.path.join(self.cascade_dirs.pos, folder))):
                 if os.path.splitext(pos_file)[1] == '.lst':
                     info_file = os.path.join(
                         self.cascade_dirs.pos, folder, pos_file)
@@ -158,7 +165,7 @@ class HaarCascadeBase(CascadeImageProcessor):
         if os.path.exists(os.path.join(self.cascade_dirs.info, 'info.lst')):
             os.remove(os.path.join(self.cascade_dirs.info, 'info.lst'))
 
-        line_count = 0
+        line_count = 1
         with open(os.path.join(self.cascade_dirs.info, 'info.lst'), 'a') as outfile:
             for info_file in info_files:
                 with open(info_file) as infile:
@@ -177,20 +184,20 @@ class HaarCascadeBase(CascadeImageProcessor):
         print('Creating positive vector file...')
 
         subprocess.call(
-            'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('info.lst', samples, width, height, vector_file), shell=True)
+            'opencv_createsamples -info {0} -num {1} -w {2} -h {3} -vec {4}'.format('cascadedata/info/info.lst', samples, width, height, vector_file), shell=True)
 
     def train_classifier(self, output_dir='cascade/data', vec_name='positives', num_stages=10, vec_width=20, vec_height=20, width=20, height=20):
         # cascade_file = os.path.join(self.cascade_dir, file_name + '.vec')
-        total_pos = len(os.walk(self.cascade_dirs.pos).__next__()[2])
-        vec_samples = 3500
+        # total_pos = len(os.walk(self.cascade_dirs.pos).__next__()[2])
+        vec_samples = 2500
         self.form_positive_vector(
             vec_name, vec_samples, width=vec_width, height=vec_height)
 
         # num_pos = total_pos * 0.4
-        num_pos = 3000
-        num_neg = 1400
+        num_pos = 2000
+        num_neg = 1000
         # num_neg = num_pos / 2
 
         print('Training Cascade Classifier...')
         subprocess.call(
-            'opencv_traincascade -data {0} -vec {1} -bg bg.txt -numPos {2} -numNeg {3} -minHitRate 0.999 -maxFalseAlarmRate 0.5 -numStages {4} -w {5} -h {6}'.format(output_dir, self.vector_file, num_pos, num_neg, num_stages, width, height), shell=True)
+            'opencv_traincascade -data {0} -vec {1} -bg bg.txt -numPos {2} -numNeg {3} -minHitRate 0.995 -maxFalseAlarmRate 0.5 -numStages {4} -w {5} -h {6}'.format(output_dir, self.vector_file, num_pos, num_neg, num_stages, width, height), shell=True)
