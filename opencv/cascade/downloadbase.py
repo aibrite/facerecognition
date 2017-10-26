@@ -104,9 +104,10 @@ class CascadeImageProcessor(DownloadPath):
 
         last_neg = 0
 
-        negative_prompt = Prompt.get_user_request('Download negative images?')
+        negative_prompt = Prompt.get_user_request(
+            'Download and process negative images?')
         background_prompt = Prompt.get_user_request(
-            'Download background images?')
+            'Download and process background images?')
         if negative_prompt:
             if not os.path.exists(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt')):
                 self.create_link_files(neg_urls, bg=False)
