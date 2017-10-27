@@ -193,11 +193,14 @@ class HaarCascadeBase(CascadeImageProcessor):
         self.form_positive_vector(
             vec_name, vec_samples, width=vec_width, height=vec_height)
 
-        # num_pos = total_pos * 0.4
-        num_pos = 2000
-        num_neg = 1000
-        # num_neg = num_pos / 2
+        # num_pos = math.floor(total_pos * 0.8)
+        num_pos = 2200
+        num_neg = 1500
+        # num_neg = math.floor(num_pos / 2)
 
         print('Training Cascade Classifier...')
         subprocess.call(
             'opencv_traincascade -data {0} -vec {1} -bg bg.txt -numPos {2} -numNeg {3} -minHitRate 0.995 -maxFalseAlarmRate 0.5 -numStages {4} -w {5} -h {6}'.format(output_dir, self.vector_file, num_pos, num_neg, num_stages, width, height), shell=True)
+
+    def save_cascade_file(self):
+        self.cascade_dirs.save_cascade_file()

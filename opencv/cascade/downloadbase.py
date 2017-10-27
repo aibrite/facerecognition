@@ -13,22 +13,6 @@ class DownloadPath():
 
         self.download_dirs = DownloadDirs(download_dir)
 
-    # def get_user_request(question):
-    #     user_options = {
-    #         'y': 'Yes',
-    #         'n': 'No'
-    #     }
-
-    #     prompt = ''
-    #     for key, value in user_options.items():
-    #         line = 'Type {0} for {1}\n'.format(key, value)
-    #         prompt += line
-
-    #     user_selection = input(
-    #         '{0}\n{1}'.format(question, prompt))
-
-    #     return user_options.get(user_selection, 'n')
-
 
 class CascadeImageProcessor(DownloadPath):
 
@@ -111,13 +95,6 @@ class CascadeImageProcessor(DownloadPath):
         if negative_prompt:
             if not os.path.exists(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt')):
                 self.create_link_files(neg_urls, bg=False)
-                # for neg_url in neg_urls:
-                #     neg_image_url_list = urllib.request.urlopen(
-                #         neg_url).read().decode()
-                #     for link in neg_image_url_list.split('\n'):
-                #         with open(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt'), 'a', encoding='utf-8') as f:
-                #             f.write(link)
-                #             f.close()
 
             last_neg = self.download_and_process(
                 clean_false_links, count=last_neg, raw_neg=False)
@@ -126,13 +103,6 @@ class CascadeImageProcessor(DownloadPath):
             if not os.path.exists(os.path.join(self.download_dirs.link_dir, 'background_urls.txt')) and os.path.exists(os.path.join(self.download_dirs.link_dir, 'negative_urls.txt')):
                 last_neg = len(os.listdir(self.download_dirs.neg))
                 self.create_link_files(bg_urls, bg=True)
-                # for bg_url in bg_urls:
-                #     bg_image_url_list = urllib.request.urlopen(
-                #         bg_url).read().decode()
-                #     for link in bg_image_url_list.split('\n'):
-                #         with open(os.path.join(self.download_dirs.link_dir, 'background_urls.txt'), 'a', encoding='utf-8') as f:
-                #             f.write(link)
-                #             f.close()
 
             last_neg = self.download_and_process(
                 clean_false_links, count=last_neg, raw_neg=True)
@@ -180,28 +150,6 @@ class CascadeImageProcessor(DownloadPath):
         remove_request = self.identify_uglies()
         if remove_request is True:
             count = 0
-            # for sign_path in os.listdir(self.dirs['main']):
-            #     if sign_path == 'uglies':
-            #         continue
-            #     for img in os.listdir(self.dirs[sign_path]):
-            #         for ugly in os.listdir(self.dirs['uglies']):
-
-            #             try:
-            #                 current_img_path = os.path.join(
-            #                     self.dirs[sign_path], img)
-            #                 ugly_img = cv2.imread(os.path.join(
-            #                     self.dirs['uglies'], ugly))
-            #                 current_img = cv2.imread(current_img_path)
-
-            #                 if ugly_img.shape == current_img.shape and not (np.bitwise_xor(ugly_img, current_img).any()):
-            #                     print('Ugly image found: {}'.format(
-            #                         current_img_path))
-            #                     print('Image removed')
-            #                     os.remove(current_img_path)
-            #                     count += 1
-
-            #             except Exception as err:
-            #                 print(str(err))
 
             for folder in [self.download_dirs.bg_folder, self.download_dirs.pos, self.download_dirs.neg]:
                 for img in os.listdir(folder):
@@ -221,26 +169,6 @@ class CascadeImageProcessor(DownloadPath):
 
                         except Exception as err:
                             print(str(err))
-
-            # for img in os.listdir(self.bg_folder):
-            #     for ugly in os.listdir(self.dirs['uglies']):
-
-            #         try:
-            #             current_img_path = os.path.join(
-            #                 self.bg_folder, img)
-            #             ugly_img = cv2.imread(os.path.join(
-            #                 self.dirs['uglies'], ugly))
-            #             current_img = cv2.imread(current_img_path)
-
-            #             if ugly_img.shape == current_img.shape and not (np.bitwise_xor(ugly_img, current_img).any()):
-            #                 print('Ugly image found: {}'.format(
-            #                     current_img_path))
-            #                 print('Image removed')
-            #                 os.remove(current_img_path)
-            #                 count += 1
-
-            #         except Exception as err:
-            #             print(str(err))
 
             print(
                 'Ugly images successfully removed. Total uglies removed: {0}'.format(count))
