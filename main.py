@@ -22,13 +22,13 @@ if __name__ == '__main__':
     #     file_name='info', positives_to_generate=50, maxxangle=0.5,
     #     maxyangle=-0.5, maxzangle=0.5)
     # cascadeBase.copy_generated_pos()
-    # cascadeBase.train_classifier(output_dir='cascadedata/data', vec_name='positives',
-    # num_stages=20, vec_width=20, vec_height=20, width=20, height=20)
+    cascadeBase.train_classifier(output_dir='cascadedata/data', vec_name='positives',
+                                 num_stages=15, vec_width=20, vec_height=20, width=20, height=20)
 
-    # test_prompt = Prompt.get_user_request(
-    #     'Start test with generated cascade file?')
-    # if test_prompt:
-    #     cascadeBase.display_faces('cascadedata/data/cascade.xml')
+    test_prompt = Prompt.get_user_request(
+        'Start test with generated cascade file?')
+    if test_prompt:
+        cascadeBase.display_faces('cascadedata/data/cascade.xml')
 
     save_prompt = Prompt.get_user_request('Save generated cascade file?')
     if save_prompt:
