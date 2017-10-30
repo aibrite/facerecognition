@@ -5,6 +5,7 @@ import subprocess
 from opencv.cascade.downloadbase import CascadeImageProcessor
 from shutil import copy2
 from opencv.cascade.paths import CascadeDirs
+import math
 
 
 class HaarCascadeBase(CascadeImageProcessor):
@@ -189,13 +190,14 @@ class HaarCascadeBase(CascadeImageProcessor):
     def train_classifier(self, output_dir='cascade/data', vec_name='positives', num_stages=10, vec_width=20, vec_height=20, width=20, height=20):
         # cascade_file = os.path.join(self.cascade_dir, file_name + '.vec')
         # total_pos = len(os.walk(self.cascade_dirs.pos).__next__()[2])
-        vec_samples = 2500
+        vec_samples = len(os.listdir(self.cascade_dirs.info))
         self.form_positive_vector(
             vec_name, vec_samples, width=vec_width, height=vec_height)
 
         # num_pos = math.floor(total_pos * 0.8)
-        num_pos = 2200
-        num_neg = 1500
+        num_pos = 5500
+        # num_neg = len(os.listdir(self.download_dirs.neg))
+        num_neg = 3900
         # num_neg = math.floor(num_pos / 2)
 
         print('Training Cascade Classifier...')
